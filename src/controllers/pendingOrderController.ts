@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as pendingOrderService from "../services/pendingOrderService";
 import * as orderService from "../services/orderService";
-import * as notesService from "../services/notesService";
+import * as receiptsService from "../services/receiptsService";
 
 const index = (req: Request, res: Response) => {
   try {
@@ -9,11 +9,11 @@ const index = (req: Request, res: Response) => {
     
     orderService.validateOrders(orders);
 
-    const notes = notesService.readNotes();
+    const receipts = receiptsService.readReceipts();
     
-    notesService.validateNotes(notes, orders);
+    receiptsService.validateReceipts(receipts, orders);
     
-    const pedidosPendentes = pendingOrderService.findPendingItems(orders,notes);
+    const pedidosPendentes = pendingOrderService.findPendingItems(orders,receipts);
     
     res.send(pedidosPendentes);
     // const pendingOrders = pendingOrderService.calculatePendingOrders();

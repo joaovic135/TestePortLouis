@@ -39,22 +39,21 @@ export function readOrders(): Order[] {
 export function validateOrders(orders: Order[]): void {
 
   orders.forEach((order) => {
-    const itemNumbers = new Set<number>();
+    const expectedItemNumbers = new Set<number>();
     let highestItemNumber = 0;
 
     order.items.forEach((item: OrderItem) => {
-
       try{
-
+        const {itemNumber} = item;
         validateOrderItem(item);
         
-        checkSequencialNumbers(item, itemNumbers);
-        itemNumbers.add(item.itemNumber);
+        checkSequencialNumbers(item, expectedItemNumbers);
+        expectedItemNumbers.add(itemNumber);
 
-        if (item.itemNumber > highestItemNumber) {
-          highestItemNumber = item.itemNumber;
+        if (itemNumber > highestItemNumber) {
+          highestItemNumber = itemNumber;
         }
-        checkHighestItemNumber(item, itemNumbers, highestItemNumber);
+        checkHighestItemNumber( expectedItemNumbers, highestItemNumber);
         
       }catch(error){
         if (error instanceof Error) {

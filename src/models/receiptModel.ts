@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export class NoteItem {
+export class ReceiptItem {
   orderId: string;
   itemNumber: number;
   productQuantity: number;
@@ -21,11 +21,11 @@ export class NoteItem {
   }
 }
 
-export class Note {
+export class Receipt {
   id: string;
-  items: NoteItem[];
+  items: ReceiptItem[];
 
-  constructor(id: string, items: NoteItem[]) {
+  constructor(id: string, items: ReceiptItem[]) {
     this.id = id;
     this.items = items;
   }

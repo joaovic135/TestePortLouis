@@ -1,12 +1,12 @@
 import { Order, OrderItem } from '../models/orderModel';
-import { NoteItem, Note } from "../models/noteModel";
+import { ReceiptItem, Receipt } from "../models/receiptModel";
 import { PendingOrder, PendingItem } from '../models/pendingOrderModel';
 import fs from 'fs';
-import { checkExistingOrder, checkExistingOrderItem } from '../validation/noteValidation';
+import { getOrderForReceiptOrderId, getOrderItemForReceiptItemNumber } from '../validation/receiptValidation';
 import { calculateOrderTotalValue, calculateRemainingQuantity, calculateRemainingValue } from '../validation/pendingOrderValidation';
 import { it } from 'node:test';
 
-export function calculatePendingOrders(orders: Order[], notes: Note[]): any[] {
+export function calculatePendingOrders(orders: Order[], receipts: Receipt[]): any[] {
   const pendingItensPerOrder: any[] = [];
 
   orders.forEach((order) => {
@@ -18,7 +18,7 @@ export function calculatePendingOrders(orders: Order[], notes: Note[]): any[] {
     const pendingItems: any[] = [];
 
     order.items.forEach((item) => {
-      const note = notes.find((note) => note.id === order.id);
+      const receipt = receipts.find((receipt) => receipt.id === order.id);
 
       //order => order.id === 'P' + orderId
 
@@ -30,60 +30,21 @@ export function calculatePendingOrders(orders: Order[], notes: Note[]): any[] {
 }
 
 
-export function findPendingItems(orders: Order[], notes: Note[]): PendingOrder[] {
+export function findPendingItems(orders: Order[], receipts: Receipt[]): PendingOrder[] {
 
   const pendingOrders: PendingOrder[] = [];
 
-  notes.forEach((note) => {
-    note.items.forEach((item: NoteItem) => {
-
-      const order = checkExistingOrder(item.orderId, orders);
-      const correspondingOrderItem = checkExistingOrderItem(item.orderId, item.itemNumber, order);
-
-      const remainingQuantity = calculateRemainingQuantity(correspondingOrderItem.productQuantity ,item.productQuantity );
+  receipts.forEach((receipt) => {
+    receipt.items.forEach(({orderId,itemNumber,productQuantity}: ReceiptItem) => {
+      
+      const orderForReceiptOrderId = getOrderForReceiptOrderId(orderId, orders);
+      const orderItemForReceiptItemNumber = getOrderItemForReceiptItemNumber(orderId, itemNumber, orderForReceiptOrderId);
+      const remainingQuantity = calculateRemainingQuantity(orderItemForReceiptItemNumber.productQuantity ,productQuantity );
 
 
       if (remainingQuantity > 0) {
-        var pendingOrder = pendingOrders.find((pendingOrder) => pendingOrder.orderId === 'P' + item.orderId);
-        if (!pendingOrder) {
-          pendingOrder = new PendingOrder(
-            'P' + item.orderId,
-            calculateOrderTotalValue(order),
-            0,
-            []
-          );
-          pendingOrders.push(pendingOrder);
-        }
-
-        const existingPendingItem = pendingOrder.pendingItems.find((pendingItem) => pendingItem.itemNumber === item.itemNumber);
-        if (existingPendingItem) {
-          var orderRemainingQuantity = item.productQuantity;
-          var productQuantity = existingPendingItem.remainingQuantity;
-          var a = productQuantity - orderRemainingQuantity;
-          if (pendingOrder.orderId === "P3") {
-
-            console.log(`orderRemainingQuantity:${orderRemainingQuantity} totalPending: ${a} quantidadependente: ${productQuantity} `)
-          }
-          if (a >= 0) {
-            if (pendingOrder.orderId === "P3") {
-              console.log(item.productQuantity)
-              console.log(existingPendingItem.remainingQuantity)
-              console.log(a)
-            }
-            existingPendingItem.remainingQuantity -= item.productQuantity;
-          }
-        } else {
-          pendingOrder.pendingItems.push(new PendingItem(item.itemNumber, remainingQuantity));
-        }
-
-
-        pendingOrders.forEach((pendingOrder) => {
-          if (pendingOrder.orderId === "P3") {
-            console.log("Pedido pendente 3: ", pendingOrder)
-          }
-        })
+        handlePendingOrder(pendingOrders, orderId, itemNumber, productQuantity, orderForReceiptOrderId, remainingQuantity);  
       }
-
     })
   })
 
@@ -99,3 +60,31 @@ export function findPendingItems(orders: Order[], notes: Note[]): PendingOrder[]
 }
 
 
+function handlePendingOrder(pendingOrders: PendingOrder[], orderId: string, itemNumber: number, productQuantity: number, orderForReceiptOrderId: Order, remainingQuantity: number){
+  let pendingOrder = pendingOrders.find((pendingOrder) => pendingOrder.orderId === 'P' + orderId);
+  if (!pendingOrder) {
+    pendingOrder = new PendingOrder(
+      'P' + orderId,
+      calculateOrderTotalValue(orderForReceiptOrderId),
+      0,
+      []
+    );
+    pendingOrders.push(pendingOrder);
+  }
+
+  handlPendingOrderItem(pendingOrder, itemNumber, productQuantity, remainingQuantity);
+  
+ 
+}
+
+
+
+function handlPendingOrderItem(pendingOrder: PendingOrder, itemNumber: number, productQuantity: number, remainingQuantity: number){
+  const existingPendingItem = pendingOrder.pendingItems.find((pendingItem) => pendingItem.itemNumber === itemNumber);
+  if (existingPendingItem) {
+    let remainingPendingQuantity = calculateRemainingQuantity(existingPendingItem.remainingQuantity, productQuantity);
+    existingPendingItem.remainingQuantity = remainingPendingQuantity >= 0 ? remainingPendingQuantity : 0;
+  } else {
+    pendingOrder.pendingItems.push(new PendingItem(itemNumber, remainingQuantity));
+  }
+}

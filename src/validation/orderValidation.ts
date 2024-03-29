@@ -18,7 +18,7 @@ export function checkSequencialNumbers(item: OrderItem , itemNumbers: Set<number
 
 }
 
-export function checkHighestItemNumber(item: OrderItem,itemNumbers: Set<number> ,highestItemNumber: number) {
+export function checkHighestItemNumber(itemNumbers: Set<number> ,highestItemNumber: number) {
   
   for (let i: number = 1; i <= highestItemNumber; i++) {
     if (!itemNumbers.has(i)) {
