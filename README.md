@@ -34,6 +34,7 @@ Para recuperar informações sobre pedidos pendentes, faça uma solicitação GE
 Para executar os testes, você pode usar o seguinte comando:
 ```bash
 npx jest
+```
 
 ## Tecnologias Utilizadas
 
@@ -42,4 +43,5 @@ npx jest
 - TypeScript
 - Docker
 - Jest
+
 
