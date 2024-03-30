@@ -65,5 +65,4 @@ export function validateOrders(orders: Order[]): void {
 
   })
 
-  console.log('Updating pending order...');
 }

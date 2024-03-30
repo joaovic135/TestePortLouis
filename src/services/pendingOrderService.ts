@@ -1,34 +1,8 @@
-import { Order, OrderItem } from '../models/orderModel';
+import { Order } from '../models/orderModel';
 import { ReceiptItem, Receipt } from "../models/receiptModel";
 import { PendingOrder, PendingItem } from '../models/pendingOrderModel';
-import fs from 'fs';
 import { getOrderForReceiptOrderId, getOrderItemForReceiptItemNumber } from '../validation/receiptValidation';
 import { calculateOrderTotalValue, calculateRemainingQuantity, calculateRemainingValue } from '../validation/pendingOrderValidation';
-import { it } from 'node:test';
-
-export function calculatePendingOrders(orders: Order[], receipts: Receipt[]): any[] {
-  const pendingItensPerOrder: any[] = [];
-
-  orders.forEach((order) => {
-
-    const totalValue = order.items.reduce((acc, item) => acc + (item.productQuantity * item.unitPrice), 0);
-
-    let balanceValue = 0;
-
-    const pendingItems: any[] = [];
-
-    order.items.forEach((item) => {
-      const receipt = receipts.find((receipt) => receipt.id === order.id);
-
-      //order => order.id === 'P' + orderId
-
-    })
-
-  })
-  console.log('Processing pending orders...');
-  return [];
-}
-
 
 export function findPendingItems(orders: Order[], receipts: Receipt[]): PendingOrder[] {
 
@@ -40,7 +14,6 @@ export function findPendingItems(orders: Order[], receipts: Receipt[]): PendingO
       const orderForReceiptOrderId = getOrderForReceiptOrderId(orderId, orders);
       const orderItemForReceiptItemNumber = getOrderItemForReceiptItemNumber(orderId, itemNumber, orderForReceiptOrderId);
       const remainingQuantity = calculateRemainingQuantity(orderItemForReceiptItemNumber.productQuantity ,productQuantity );
-
 
       if (remainingQuantity > 0) {
         handlePendingOrder(pendingOrders, orderId, itemNumber, productQuantity, orderForReceiptOrderId, remainingQuantity);  
