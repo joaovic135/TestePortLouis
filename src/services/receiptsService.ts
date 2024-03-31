@@ -37,12 +37,12 @@ export function validateReceipts(receipts: Receipt[], orders: Order[]): void {
     try {
    
       receipt.items.forEach((item: ReceiptItem) => {
-        
+        const {orderId, itemNumber} = item;
         validateReceiptItem(item);
 
-        const order  = getOrderForReceiptOrderId(item.orderId, orders)
+        const order  = getOrderForReceiptOrderId(orderId, orders)
         
-        const correspondingOrder = getOrderItemForReceiptItemNumber(item.orderId, item.itemNumber, order);
+        const correspondingOrder = getOrderItemForReceiptItemNumber(orderId, itemNumber, order);
 
         checkReceiptQuantity(receipt, item, correspondingOrder, order);
      
